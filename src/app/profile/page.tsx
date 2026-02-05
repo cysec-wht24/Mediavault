@@ -8,6 +8,7 @@ import { cn } from "../../../lib/utils";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import Logo from "../../components/ui/logo"
 
 type Playlist = {
   _id: string;
@@ -116,22 +117,6 @@ export default function SidebarDemo() {
     </div>
   );
 }
-
-export const Logo = () => {
-  return (
-    <Link
-      href="#"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black">
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-medium whitespace-pre text-black dark:text-white">
-        PlayStar
-      </motion.span>
-    </Link>
-  );
-};
 
 const Dashboard = () => {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
