@@ -26,14 +26,21 @@ export async function GET() {
     }
 
     return NextResponse.json({ message: "User found", data: {username: user.username}}, { status: 200 });
-  } catch (err: any) {
-    console.error("🔥 route error:", err);
-    // send back err.message so it’s never undefined
-    return NextResponse.json(
-      { error: err.message || "Unknown error" },
-      { status: err.message === "Token missing" ? 400 : 401 }
-    );
-  }
+  } catch (err: unknown) {
+      console.error("🔥 route error:", err);
+
+      if (err instanceof Error) {
+        return NextResponse.json(
+          { error: err.message },
+          { status: err.message === "Token missing" ? 400 : 401 }
+        );
+      }
+
+      return NextResponse.json(
+        { error: "Unknown error" },
+        { status: 500 }
+      );
+    }
 }
 
 
