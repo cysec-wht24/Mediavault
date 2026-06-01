@@ -20,7 +20,7 @@ export default function BackgroundBeamsDemo() {
       text: "with",
     },
     {
-      text: "PlayStar.",
+      text: "Mediavault .",
       className: "text-blue-500 dark:text-blue-500",
     },
   ];
