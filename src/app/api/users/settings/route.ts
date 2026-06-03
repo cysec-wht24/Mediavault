@@ -3,10 +3,15 @@ import { connect } from "@/dbConfig/dbConfig";
 import User from "@/models/userModel";
 import { getDataFromToken } from "@/helpers/getDataFromToken";
 import bcryptjs from "bcryptjs";
-import { writeFile } from "fs/promises";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 
 connect();
+
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // GET method to fetch user settings
 export async function GET(request: NextRequest) {
@@ -125,24 +130,25 @@ export async function POST(request: NextRequest) {
       const bytes = await profilePictureFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      // Create unique filename
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      const ext = path.extname(profilePictureFile.name) || '.jpg';
-      const filename = `profile-${userId}-${uniqueSuffix}${ext}`;
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "profiles");
-      const filepath = path.join(uploadDir, filename);
+      // Upload to Cloudinary as base64
+      const uploadResult = await new Promise<any>((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            {
+              folder: "mediavault/profiles",
+              public_id: `profile-${userId}`,
+              overwrite: true,
+              resource_type: "image",
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          )
+          .end(buffer);
+      });
 
-      // Ensure the directory exists
-      const fs = require("fs");
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-
-      // Write file
-      await writeFile(filepath, buffer);
-
-      // Update user profile picture path
-      user.profilePicture = `/uploads/profiles/${filename}`;
+      user.profilePicture = uploadResult.secure_url;
     }
 
     // Save updated user
