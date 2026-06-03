@@ -407,9 +407,11 @@ function Workspace() {
             <CldUploadWidget
               signatureEndpoint="/api/users/sign-cloudinary-params"
               options={{
-                sources: ['local', 'url'],
+                sources: ['local'],
                 resourceType: 'video',
                 singleUploadAutoClose: false,
+                clientAllowedFormats: ['mp4', 'mov', 'webm'],
+                maxFileSize: 100000000,
               }}
               onSuccess={handleUploadSuccess}
               onQueuesEnd={handleQueuesEnd}
