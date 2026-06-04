@@ -1,286 +1,228 @@
-# Playlist-Manager
+<div align="center">
 
-This project is called **Playlist-Manager**. Below are visuals showcasing the app's structure and interface at various stages.
+# 🎬 MediaVault
 
----
+**Production SaaS platform for automated video repurposing and format conversion**
 
-### 🔧 Project Structure
+[![Next.js](https://img.shields.io/badge/Next.js_15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/)
 
-![Structure](./pictures/Structure.png)
+[Live Demo](https://playstar-pi.vercel.app/) · [GitHub](https://github.com/cysec-wht24/Mediavault.git)
 
----
-
-### 🏠 Homepage
-
-![Homepage](./pictures/Homepage.png)
-
----
-
-### 🔑 Login Screen
-
-![Login](./pictures/Login.png)
+</div>
 
 ---
 
-### 📝 Sign-Up Screen
+## 📸 Demo
 
-![Sign Up](./pictures/SignUp.png)
-
----
-
-### 📂 Empty Workspace
-
-![Empty Workspace](./pictures/EmptyWorkspace.png)
+> 🎥 **[Watch full product walkthrough →](#)** *(drop your video link here)*
 
 ---
 
-### 📊 Dashboard
+## Overview
 
-![Dashboard](./pictures/Dashboard.png)
+MediaVault is a **browser-based SaaS tool** that lets users upload, organize, and repurpose videos without touching a single desktop app. Users upload once and get back transformation-ready URLs across any aspect ratio, resolution, or format — instantly, from any device.
 
----
-
-### ⬆️ Upload Widget
-
-![Upload Widget](./pictures/Upload%20Widget.png)
+Built end-to-end with a secure REST API, JWT authentication, email verification, Cloudinary signed upload pipelines, and persistent playlist management backed by MongoDB.
 
 ---
 
-### 🎥 Videos View
+## ✨ Features
 
-![Videos](./pictures/Videos.png)
+| Feature | Details |
+|---|---|
+| **Secure Auth** | JWT-based login/signup with email verification via Nodemailer |
+| **Signed Upload Pipeline** | Server-side Cloudinary signature generation — API secret never exposed to the client |
+| **Video Transformation API** | Aspect ratio, resolution, and format conversion on demand via a single POST endpoint |
+| **Playlist Management** | Create, browse, and manage named playlists with auto-generated thumbnails |
+| **Format Conversion** | MP4, WebM, MOV, AVI — enforced allowlist, no unsupported formats accepted |
+| **Resolution Presets** | 1080p, 720p, 480p, 360p with Cloudinary `auto:good` quality tuning |
+| **Aspect Ratio Presets** | 16:9 · 9:16 · 1:1 · 4:3 · 21:9 · 4:5 — smart AI crop with `gravity: auto` |
+| **Workspace** | Per-user media library with thumbnails pulled at 2-second offset |
+| **Profile & Settings** | Editable profile picture (Cloudinary-hosted), full name, and account settings |
+| **Protected Routes** | Next.js Edge Middleware guards all `/profile/*` routes without client-side flicker |
 
 ---
 
-## Command History 
+## 🏗️ Architecture
 
-```bash
-npm i axios bcryptjs jsonwebtoken nodemailer react-hot-toast mongoose
+```
+MediaVault/
+├── src/
+│   ├── app/
+│   │   ├── api/users/
+│   │   │   ├── login/          # POST — credential validation, JWT cookie
+│   │   │   ├── logout/         # GET  — cookie clear
+│   │   │   ├── signup/         # POST — bcrypt hash, email verification token
+│   │   │   ├── verifyemail/    # GET  — token-based email confirmation
+│   │   │   ├── me/             # GET  — auth guard, returns current user
+│   │   │   ├── profile/        # GET/POST — playlist CRUD
+│   │   │   ├── workspace/      # GET/POST/DELETE — video management
+│   │   │   ├── transform/      # POST — Cloudinary transformation URL generation
+│   │   │   ├── sign-cloudinary-params/  # POST — signed upload params
+│   │   │   └── settings/       # PATCH — profile update
+│   │   ├── login/              # Login page
+│   │   ├── signup/             # Signup page
+│   │   ├── verifyemail/        # Email verification page
+│   │   └── profile/
+│   │       ├── page.tsx        # Playlist dashboard
+│   │       ├── workspace/      # Media workspace
+│   │       └── settings/       # Account settings
+│   ├── models/
+│   │   ├── userModel.js        # Mongoose User schema
+│   │   └── playlistModel.js    # Mongoose Playlist schema (compound unique index)
+│   ├── helpers/
+│   │   ├── getDataFromToken.ts # JWT extraction from HttpOnly cookie
+│   │   ├── getDataFromCloudinary.ts
+│   │   └── mailer.ts           # Nodemailer + token dispatch
+│   ├── dbConfig/
+│   │   └── dbConfig.ts         # Mongoose connection singleton
+│   └── middleware.ts           # Edge Middleware — route protection
 ```
 
-No need to add express in Nextjs (has built-in express alternatives), would be using jwt and nodemailer services as well as mongoose for the ORM to communicate with db, react-hot-toast for popup notification stuff. 
+---
 
-you also need to set up your .env file 
-MONGO_URI=
-SECRET_TOKEN=nextjsyoutube
+## 🔌 REST API Reference
+
+All endpoints are under `/api/users/`. Authentication is via an **HttpOnly JWT cookie** set on login.
+
+### Auth
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:---:|
+| `POST` | `/api/users/signup` | Register new user | ❌ |
+| `POST` | `/api/users/login` | Authenticate, sets JWT cookie | ❌ |
+| `GET` | `/api/users/logout` | Clears session cookie | ✅ |
+| `GET` | `/api/users/verifyemail?token=` | Email verification | ❌ |
+| `GET` | `/api/users/me` | Get current user info | ✅ |
+
+### Media
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:---:|
+| `POST` | `/api/users/sign-cloudinary-params` | Generate signed upload params | ✅ |
+| `POST` | `/api/users/transform` | Generate transformation URL | ✅ |
+| `GET` | `/api/users/workspace` | Fetch user's media library | ✅ |
+| `POST` | `/api/users/workspace` | Add video to workspace | ✅ |
+| `DELETE` | `/api/users/workspace` | Remove video from workspace | ✅ |
+
+### Playlists & Profile
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|:---:|
+| `GET` | `/api/users/profile` | List user playlists | ✅ |
+| `POST` | `/api/users/profile` | Create playlist | ✅ |
+| `PATCH` | `/api/users/settings` | Update profile info / picture | ✅ |
+
+---
+
+## 🛡️ Security Design
+
+- **Signed Cloudinary uploads** — server generates the upload signature; the API secret is never sent to the browser
+- **HttpOnly JWT cookies** — tokens inaccessible to JavaScript; no `localStorage` exposure
+- **bcryptjs password hashing** — salted at rest
+- **Email verification gate** — accounts not usable until verified via tokenized link
+- **Edge Middleware auth guard** — `/profile/*` routes redirect unauthenticated requests before any page renders
+- **Input validation** — format allowlist enforced at the API layer; invalid aspect ratios and resolutions are rejected
+
+---
+
+## 🧰 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Framework** | Next.js 15 (App Router) |
+| **Language** | TypeScript 5 |
+| **Database** | MongoDB Atlas + Mongoose 8 |
+| **Media CDN** | Cloudinary (upload, transformation, thumbnail generation) |
+| **Auth** | JSON Web Tokens + bcryptjs |
+| **Email** | Nodemailer |
+| **UI** | Tailwind CSS v4, Framer Motion, Radix UI |
+| **Deployment** | Vercel |
+
+---
+
+## ⚙️ Local Setup
+
+### Prerequisites
+
+- Node.js 18+
+- MongoDB Atlas URI
+- Cloudinary account (free tier works)
+- SMTP credentials (Mailtrap or similar for dev)
+
+### Steps
+
+```bash
+git clone https://github.com/cysec-wht24/Mediavault.git
+cd Mediavault
+npm install
+```
+
+Create a `.env` file at the root:
+
+```env
+MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/mediavault
+
+SECRET_TOKEN=your_jwt_secret_here
 DOMAIN=http://localhost:3000
 
-connect ssh with github
-ssh -T git@github.com
-git remote set-url origin git@github.com:cysec-wht24/Playlist-Manager.git
-git remote -v : To verify change
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+NEXT_PUBLIC_CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
+MAIL_USER=your_smtp_user
+MAIL_PASS=your_smtp_pass
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# → http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Data Models
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### User
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-Error faced and their solution:
-
-So I tried using the accertinity UI library but I am unable to use due to a runtime error errorMissingDefaultExport
-next/dist/src/server/app-render/create-component-tree.tsx (59:9)
-createComponentTreeInternal
-next/dist/src/server/app-render/create-component-tree.tsx (352:7)
-async
-next/dist/src/server/app-render/create-component-tree.tsx (500:28)
-async createComponentTreeInternal
-next/dist/src/server/app-render/create-component-tree.tsx (426:28)
-async
-next/dist/src/server/app-render/create-component-tree.tsx (500:28)
-async createComponentTreeInternal
-next/dist/src/server/app-render/create-component-tree.tsx (426:28)
-async getRSCPayload
-next/dist/src/server/app-render/app-render.tsx (834:20)
-async renderToStream
-next/dist/src/server/app-render/app-render.tsx (1855:26)
-async renderToHTMLOrFlightImpl
-next/dist/src/server/app-render/app-render.tsx (1554:20)
-async doRender
-node_modules/next/src/server/base-server.ts (2777:22)
-async DevServer.renderToResponseWithComponentsImpl
-node_modules/next/src/server/base-server.ts (3145:24)
-async DevServer.renderPageComponent
-node_modules/next/src/server/base-server.ts (3730:16)
-async DevServer.renderToResponseImpl
-node_modules/next/src/server/base-server.ts (3792:24)
-async DevServer.pipeImpl
-node_modules/next/src/server/base-server.ts (1770:21)
-async NextNodeServer.handleCatchallRenderRequest
-node_modules/next/src/server/next-server.ts (1085:7)
-async DevServer.handleRequestImpl
-node_modules/next/src/server/base-server.ts (1522:9)
-async
-node_modules/next/src/server/dev/next-dev-server.ts (512:14)
-async Span.traceAsyncFn
-node_modules/next/src/trace/trace.ts (143:14)
-async DevServer.handleRequest
-node_modules/next/src/server/dev/next-dev-server.ts (510:20)
-async invokeRender
-node_modules/next/src/server/lib/router-server.ts (292:11)
-async handleRequest
-node_modules/next/src/server/lib/router-server.ts (541:16)
-async requestHandlerImpl
-node_modules/next/src/server/lib/router-server.ts (587:7)
-async Server.requestListener
-node_modules/next/src/server/lib/start-server.ts (154:7) like I made a signup folder inside the src directory under which there is a page .tsx file I also setted the lib folder with utils.tsx and other dependencies still I am getting some sort of error 
-
- Solution: 
-Verify Your Page Component
-In Next.js, every page file (e.g., src/signup/page.tsx or src/app/signup/page.tsx if you’re using the new app directory) must have a default export. For example:
-
-// src/app/signup/page.tsx or src/signup/page.tsx
-import React from 'react';
-
-export default function Signup() {
-  return <div>Sign up here!</div>;
-}
-Make sure your file isn’t just using named exports. If you’re using something like:
-
-export function Signup() { ... }
-change it to a default export. 
-
-Moral: You didn't add default in export default function SignupFormDemo() { } in the page.tsx of signup
-__________________________________________________________________________________________________________
-
-The idea behind using controlled components—adding `value` and `onChange` to your `<Input>` elements and managing their state with the `useState` hook—is to keep React in full control of your form data. Here’s why this approach is beneficial:
-
-### Single Source of Truth
-- **Consistency:** The state stored in your component is the single source of truth for the form inputs. This means at any point, you have an up-to-date reflection of what the user has entered.
-- **Predictability:** Because all changes go through React's state, it's easier to track and manage how data changes over time.
-
-### Real-Time Validation and Feedback
-- **Instant Validation:** With the input values stored in state, you can validate them on-the-fly as the user types. For example, you might want to check if an email is correctly formatted before enabling the submit button.
-- **User Feedback:** You can provide immediate visual feedback (like error messages or formatting hints) based on the current state of the inputs.
-
-### Separation of Concerns
-- **Input Handling vs. Form Submission:** The `onChange` handlers update the state as the user types, while the `onSubmit` or `onSignUp` async function handles the submission logic. This separation means that your async operation only runs when the user decides to submit the form, and it can reliably use the already-managed state values.
-- **Easier Debugging:** With the state always reflecting the input fields, debugging becomes simpler—you can inspect the state to see exactly what the user has input at any moment.
-
-### How It Works with Async Submission
-- **Before Submission:** As the user fills out the form, each keystroke updates the component's state via the `onChange` handler. This ensures that when the form is submitted, the state holds the current values.
-- **On Submission:** When the user presses the sign-up button, the `handleSubmit` (or `onSignUp`) function is called. This async function can then use the current state values to, for instance, send an API request. There’s no need to query the DOM for input values—the state already contains everything you need.
-
-Here’s a simple code example to illustrate the concept:
-
-```jsx
-import React, { useState } from 'react';
-
-function SignUpForm() {
-  // Controlled input state
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
-  // Async function for form submission
-  const handleSignUp = async (e) => {
-    e.preventDefault();
-    try {
-      // Use the current state values in your async API call
-      const response = await fetchData({ username, password });
-      // Handle the API response
-      console.log(response);
-    } catch (error) {
-      // Handle any errors during the async operation
-      console.error(error);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSignUp}>
-      <input
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder="Username"
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-      />
-      <button type="submit">Sign Up</button>
-    </form>
-  );
-}
+```
+username        String  (unique)
+email           String  (unique)
+password        String  (bcrypt hashed)
+fullName        String
+profilePicture  String  (Cloudinary URL)
+isVerified      Boolean
+verifyToken     String
+verifyTokenExpiry Date
 ```
 
-In this example:
-- **Controlled Components:** The `<input>` elements are controlled by React state.
-- **Async Submission:** The `handleSignUp` function is async and uses the current state values when the form is submitted.
+### Playlist
 
-### Summary
-Using controlled components with `useState` ensures that your form data is immediately accessible, easy to validate, and seamlessly integrated into your async submission process. This pattern improves the reliability and maintainability of your code by separating input handling from data submission logic.
-______________________________________________________________________________________________________
+```
+owner       ObjectId → User
+name        String   (unique per user — compound index)
+description String
+thumbnail   String   (auto-set from first video, Cloudinary)
+videos[]    { url, title, thumbnail, addedAt }
+timestamps  createdAt, updatedAt
+```
 
-Situation:
-I was using react dom in framer motion and had used it everywhere when I installed react dom something package for navigation then I uninstalled it it completely uninstalled the package due to wich framer motion accertinity library started giving error so now when I ran this commandrm -rf node_modules and npm install it gave me huge number of errors but then after deleting the project and recloning it from github then instaling autoprefixer and tailwindcss then running this
- rm -rf node_modules/.cache
-npm run dev it somehow ran without error
+---
 
-Reflection:
-It sounds like the issue was caused by some dependency conflicts and cache inconsistencies. When you uninstalled that navigation-related React DOM package, it probably removed a dependency that Framer Motion (or one of its internals, like the accertinity library) was expecting to be present. This led to a cascade of errors when you reinstalled your modules.
+## 🚀 Deployment
 
-By deleting the project and recloning it from GitHub, you essentially reset your local environment. Then, reinstalling the necessary packages (autoprefixer, tailwindcss, etc.) and clearing the cache with rm -rf node_modules/.cache forced a completely clean install. This removed any leftover or conflicting cache entries and ensured that all dependencies were installed with the correct versions.
+Deployed to **Vercel** with environment variables configured via the Vercel dashboard. The Next.js Edge Middleware runs at the CDN edge — zero cold-start latency on protected route guards.
 
-In short, your steps:
+No additional server config needed. `npm run build` + `vercel --prod` is the full deploy pipeline.
 
--> Re-cloning the project helped remove any corrupt or misconfigured local files.
+---
 
--> Reinstalling dependencies ensured that you had a consistent set of modules.
+## 📄 License
 
--> Clearing the cache forced the build system to reprocess all assets from scratch.
+[MIT](./LICENSE)
 
-These actions resolved the issues caused by the previous dependency removal and any stale cache data. If you run into similar issues in the future, doing a clean reinstall (or even deleting and recloning if necessary) is often an effective solution.
-
-Moral: Calm down before running any command think before the consequences especially if it invloves deleting or reinstalling something
-________________________________________________________________________________________________________
-
-Note: 
-1) We'll also get the error dot message in the logs. Now this log message will be available to you on the
-user side in the browser because it's a use client. All the console log messages in the API
-will be available in the bottom section, the terminal, because it's on the server side.
-
-2) Now, once everything is verified that your user exists, your password is correct, then
-we actually create a token. This token is created by simply JSON web token. We encrypt that.
-Obviously it's not just a plain token. And we send this token into users cookies, not in the 
-user local storage because he can manipulate the token there. But we can send the secure 
-cookie to the user. And then later on whenever we wish, we can access those cookies as well. 
-So it helps as a bridger to verify whenever the user we want to verify, it just has the id of the
-user, but it can have a lot of payload into that. You can send a user id, email, admin, type, 
-whatever you wish. You can send all this data as a payload to that.
-_______________________________________________________________________________________________________
-
-Question 
-1) What is this __next_hmr_refresh_hash__ what is this thing 4df371a36076ac33e9e387abd8fa88c2633457081244afec why is it coming along side my jwt token ?
+---

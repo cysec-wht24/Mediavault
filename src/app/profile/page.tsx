@@ -20,12 +20,6 @@ type Playlist = {
   videos?: any[]; // Array of video references
 };
 
-// Optional, maybe should be in route.ts of profile
-function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return match ? decodeURIComponent(match[2]) : null;
-}
-
 export default function SidebarDemo() {
   const router = useRouter();
   const [username, setUsername] = useState("Username");
@@ -45,29 +39,8 @@ export default function SidebarDemo() {
     fetchUsername();
   }, []); // This runs only once when the component mounts
 
-  useEffect(() => {
-    const token = getCookie("token");
-    if (!token) {
-      router.push("/login");
-    }
-  }, [router]);
-
-  const logout = async () => {
-    try {
-      console.log("Calling logout API..."); // Debug log
-      const response = await axios.get("/api/users/logout");
-      console.log("Logout API response:", response.data); // Debug log
-
-      if (response.data.success) {
-        toast.success(response.data.message);
-        router.push("/login");
-      } else {
-        toast.error("Logout failed");
-      }
-    } catch (error: any) {
-      console.error("Logout error:", error.message);
-      toast.error("An error occurred while logging out");
-    }
+  const logout = () => {
+    window.location.replace("/api/users/logout");
   };
 
   const links = [
