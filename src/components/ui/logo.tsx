@@ -15,7 +15,7 @@ export default function Logo() {
         animate={{ opacity: 1 }}
         className="font-medium whitespace-pre"
       >
-        PlayStar
+        MediaVault
       </motion.span>
     </Link>
   );

@@ -100,7 +100,7 @@ const Logo = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="font-medium whitespace-pre text-black dark:text-white">
-        PlayStar
+        MediaVault
       </motion.span>
     </Link>
   );
@@ -239,6 +239,26 @@ const SettingsContent = () => {
       console.error("Error updating settings:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = confirm(
+      "Are you sure you want to delete your account? This will permanently delete all your playlists and videos. This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    const doubleConfirmed = confirm(
+      "Last warning — this is permanent. Delete account?"
+    );
+    if (!doubleConfirmed) return;
+
+    try {
+      await axios.delete("/api/users/settings");
+      toast.success("Account deleted");
+      window.location.replace("/");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete account");
     }
   };
 
@@ -417,6 +437,20 @@ const SettingsContent = () => {
               </button>
             </div>
           </form>
+          {/* Danger Zone */}
+          <div className="bg-black p-6 rounded-lg border border-red-900 mt-8">
+            <h2 className="text-xl font-semibold mb-2 text-red-500">Danger Zone</h2>
+            <p className="text-sm text-gray-400 mb-4">
+              Permanently delete your account and all associated playlists and media. This cannot be undone.
+            </p>
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold transition-colors"
+            >
+              Delete Account
+            </button>
+          </div>
         </div>
       </div>
     </div>

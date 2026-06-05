@@ -55,6 +55,37 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = await getDataFromToken(request);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Delete all playlists owned by the user
+    const Playlist = (await import("@/models/playlistModel")).default;
+    await Playlist.deleteMany({ owner: userId });
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    // Clear the auth cookie
+    const response = NextResponse.json({
+      message: "Account deleted successfully",
+      success: true,
+    });
+    response.cookies.set("token", "", { httpOnly: true, expires: new Date(0) });
+
+    return response;
+  } catch (error: any) {
+    console.error("Account deletion error:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to delete account" },
+      { status: 500 }
+    );
+  }
+}
+
 // POST method to update user settings
 export async function POST(request: NextRequest) {
   try {
