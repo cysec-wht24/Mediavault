@@ -33,6 +33,40 @@ function generateThumbnailUrl(
   });
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const userId = await getDataFromToken(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const playlistId = request.nextUrl.searchParams.get('id');
+    if (!playlistId || !mongoose.Types.ObjectId.isValid(playlistId)) {
+      return NextResponse.json({ error: 'Invalid playlist ID' }, { status: 400 });
+    }
+
+    const { public_id, newTitle } = await request.json();
+    if (!public_id || !newTitle?.trim()) {
+      return NextResponse.json({ error: 'Missing public_id or newTitle' }, { status: 400 });
+    }
+
+    const updatedPlaylist = await Playlist.findOneAndUpdate(
+      { _id: playlistId, owner: userId, 'videos.url': public_id },
+      { $set: { 'videos.$.title': newTitle.trim() } },
+      { new: true }
+    );
+
+    if (!updatedPlaylist) {
+      return NextResponse.json({ error: 'Playlist or video not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Video renamed successfully' });
+  } catch (error) {
+    console.error('Error renaming video:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
     try {
         // Authenticate the user

@@ -27,6 +27,8 @@ function Workspace() {
   const [quality, setQuality] = useState<string>('auto');
   const [format, setFormat] = useState<string>('mp4');
   const [isTransforming, setIsTransforming] = useState<boolean>(false);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const searchParams = useSearchParams();
@@ -268,6 +270,29 @@ function Workspace() {
     }
   };
 
+  // ─── Rename ───────────────────────────────────────────────────────────────────
+  const handleRename = async (public_id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!playlistId) return;
+    if (!renameValue.trim()) {
+      toast.error('Name cannot be empty');
+      return;
+    }
+    try {
+      await axios.patch(`/api/users/workspace?id=${encodeURIComponent(playlistId)}`, {
+        public_id,
+        newTitle: renameValue,
+      });
+      setVideoDetails(prev =>
+        prev.map(v => v.public_id === public_id ? { ...v, original_name: renameValue } : v)
+      );
+      toast.success('Video renamed!');
+      setRenamingId(null);
+    } catch {
+      toast.error('Failed to rename video');
+    }
+  };
+
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
@@ -506,9 +531,40 @@ function Workspace() {
                 </div>
 
                 <div className="flex-1 min-w-0 pt-1">
-                  <h4 className="text-sm font-medium text-white truncate">
-                    {video.original_name || 'Untitled Video'}
-                  </h4>
+                  {renamingId === video.public_id ? (
+                    <div className="flex gap-1" onClick={e => e.stopPropagation()}>
+                      <input
+                        autoFocus
+                        value={renameValue}
+                        onChange={e => setRenameValue(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleRename(video.public_id, e as any);
+                          if (e.key === 'Escape') setRenamingId(null);
+                        }}
+                        className="text-sm bg-[#3f3f3f] text-white rounded px-2 py-0.5 w-full outline-none border border-gray-500 focus:border-red-500"
+                      />
+                      <button
+                        onClick={e => handleRename(video.public_id, e)}
+                        className="text-xs px-2 py-0.5 bg-green-600 hover:bg-green-700 rounded text-white shrink-0"
+                      >✓</button>
+                      <button
+                        onClick={e => { e.stopPropagation(); setRenamingId(null); }}
+                        className="text-xs px-2 py-0.5 bg-gray-600 hover:bg-gray-700 rounded text-white shrink-0"
+                      >✕</button>
+                    </div>
+                  ) : (
+                    <h4
+                      className="text-sm font-medium text-white truncate cursor-text"
+                      onDoubleClick={e => {
+                        e.stopPropagation();
+                        setRenamingId(video.public_id);
+                        setRenameValue(video.original_name || '');
+                      }}
+                      title="Double-click to rename"
+                    >
+                      {video.original_name || 'Untitled Video'}
+                    </h4>
+                  )}
                   <p className="text-xs text-gray-400 mt-1 truncate">{video.public_id}</p>
                 </div>
 
