@@ -18,7 +18,7 @@
 
 ## 📸 Demo
 
-> 🎥 **[Watch full product walkthrough →](https://github.com/user-attachments/assets/2d6a37d2-74da-4b5e-96f1-2b482510a100)**
+https://github.com/user-attachments/assets/2d6a37d2-74da-4b5e-96f1-2b482510a100
 ---
 
 ## Overview
