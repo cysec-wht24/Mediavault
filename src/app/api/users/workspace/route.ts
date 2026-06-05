@@ -220,15 +220,10 @@ export async function DELETE(request: NextRequest) {
     // This handles both old format (string) and new format (object with url field)
     const updatedPlaylist = await Playlist.findOneAndUpdate(
       { _id: playlistId, owner: userId },
-      { 
-        $pull: { 
-          videos: { 
-            $or: [
-              public_id,  // Old format: direct string match
-              { url: public_id }  // New format: match url field
-            ]
-          } 
-        } 
+      {
+        $pull: {
+          videos: { url: public_id }  // new format (object with url field)
+        }
       },
       { new: true }
     );
@@ -240,28 +235,35 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Update playlist thumbnail if needed
-    if (updatedPlaylist.videos.length > 0) {
-      const firstVideo = updatedPlaylist.videos[0];
-      if (typeof firstVideo === 'object' && firstVideo.thumbnail) {
-        updatedPlaylist.thumbnail = firstVideo.thumbnail;
-      } else if (typeof firstVideo === 'string') {
-        updatedPlaylist.thumbnail = generateThumbnailUrl(firstVideo, {
-          startOffset: "2",
-          width: 640,
-          height: 360,
-        });
+    // Handle old format (plain string stored directly)
+    await Playlist.findOneAndUpdate(
+      { _id: playlistId, owner: userId },
+      {
+        $pull: {
+          videos: public_id  // old format (string)
+        }
       }
-      await updatedPlaylist.save();
+    );
+
+    // Update playlist thumbnail if needed
+    // After both pulls, fetch fresh document for thumbnail update
+    const finalPlaylist = await Playlist.findOne({ _id: playlistId, owner: userId });
+    if (!finalPlaylist) return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+
+    if (finalPlaylist.videos.length > 0) {
+      const firstVideo = finalPlaylist.videos[0];
+      finalPlaylist.thumbnail = typeof firstVideo === 'object' && firstVideo.thumbnail
+        ? firstVideo.thumbnail
+        : generateThumbnailUrl(typeof firstVideo === 'string' ? firstVideo : firstVideo.url, { startOffset: "2", width: 640, height: 360 });
+      await finalPlaylist.save();
     } else {
-      // No videos left, clear thumbnail
-      updatedPlaylist.thumbnail = null;
-      await updatedPlaylist.save();
+      finalPlaylist.thumbnail = null;
+      await finalPlaylist.save();
     }
 
     return NextResponse.json({
       message: 'Video removed from playlist and deleted from Cloudinary successfully',
-      playlist: updatedPlaylist,
+      playlist: finalPlaylist,
     });
   } catch (error) {
     console.error('Error removing video from playlist:', error);

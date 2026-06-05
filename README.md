@@ -85,40 +85,6 @@ MediaVault/
 
 ---
 
-## 🔌 REST API Reference
-
-All endpoints are under `/api/users/`. Authentication is via an **HttpOnly JWT cookie** set on login.
-
-### Auth
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:---:|
-| `POST` | `/api/users/signup` | Register new user | ❌ |
-| `POST` | `/api/users/login` | Authenticate, sets JWT cookie | ❌ |
-| `GET` | `/api/users/logout` | Clears session cookie | ✅ |
-| `GET` | `/api/users/verifyemail?token=` | Email verification | ❌ |
-| `GET` | `/api/users/me` | Get current user info | ✅ |
-
-### Media
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:---:|
-| `POST` | `/api/users/sign-cloudinary-params` | Generate signed upload params | ✅ |
-| `POST` | `/api/users/transform` | Generate transformation URL | ✅ |
-| `GET` | `/api/users/workspace` | Fetch user's media library | ✅ |
-| `POST` | `/api/users/workspace` | Add video to workspace | ✅ |
-| `DELETE` | `/api/users/workspace` | Remove video from workspace | ✅ |
-
-### Playlists & Profile
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|:---:|
-| `GET` | `/api/users/profile` | List user playlists | ✅ |
-| `POST` | `/api/users/profile` | Create playlist | ✅ |
-| `PATCH` | `/api/users/settings` | Update profile info / picture | ✅ |
-
----
-
 ## 🛡️ Security Design
 
 - **Signed Cloudinary uploads** — server generates the upload signature; the API secret is never sent to the browser
