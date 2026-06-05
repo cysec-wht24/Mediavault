@@ -18,7 +18,8 @@
 
 ## 📸 Demo
 
-https://github.com/user-attachments/assets/2d6a37d2-74da-4b5e-96f1-2b482510a100
+<video src="https://github.com/user-attachments/assets/2d6a37d2-74da-4b5e-96f1-2b482510a100" controls width="100%"></video>
+
 ---
 
 ## Overview
