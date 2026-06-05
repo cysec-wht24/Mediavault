@@ -222,28 +222,10 @@ function Workspace() {
   };
 
   // Fires once when all queued uploads are done — refreshes the list
-  const handleQueuesEnd = async (result: any) => {
+  const handleQueuesEnd = async () => {
     toast.success('Videos uploaded successfully!');
-    
-    const newPublicId = result?.info?.files?.[0]?.uploadInfo?.public_id;
-    
-    if (!newPublicId) {
-      await fetchVideoDetails();
-      return;
-    }
-
-    // Poll every 3s until the new video shows up, max 20 attempts (60s)
-    let attempts = 0;
-    const poll = async () => {
-      await fetchVideoDetails();
-      const found = videoDetails.some(v => v.public_id === newPublicId);
-      if (!found && attempts < 20) {
-        attempts++;
-        setTimeout(poll, 3000);
-      }
-    };
-
-    await poll();
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    await fetchVideoDetails();
   };
 
   // ─── Delete ───────────────────────────────────────────────────────────────────
