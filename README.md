@@ -18,8 +18,7 @@
 
 ## 📸 Demo
 
-> 🎥 **[Watch full product walkthrough →](#)** *(drop your video link here)*
-
+> 🎥 **[Watch full product walkthrough →](https://github.com/user-attachments/assets/2d6a37d2-74da-4b5e-96f1-2b482510a100)**
 ---
 
 ## Overview
@@ -63,7 +62,7 @@ MediaVault/
 │   │   │   ├── workspace/      # GET/POST/DELETE — video management
 │   │   │   ├── transform/      # POST — Cloudinary transformation URL generation
 │   │   │   ├── sign-cloudinary-params/  # POST — signed upload params
-│   │   │   └── settings/       # PATCH — profile update
+│   │   │   └── settings/       # PATCH/POST/DELETE/GET — profile update + account deletion
 │   │   ├── login/              # Login page
 │   │   ├── signup/             # Signup page
 │   │   ├── verifyemail/        # Email verification page
